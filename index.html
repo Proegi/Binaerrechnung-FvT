@@ -383,18 +383,20 @@
       <input type="text" id="inBlockSize" class="w-short" inputmode="numeric" autocomplete="off">
       <label class="field" for="inNetCount">Anzahl der Netze</label>
       <input type="text" id="inNetCount" class="w-short" inputmode="numeric" autocomplete="off">
+      <button class="check" data-check="a2d1">Prüfen</button>
     </div>
-    <p style="margin-top:14px;">Welche dieser Geräte liegen im selben Netz wie <strong>192.168.20.200</strong>?</p>
+    <div class="msg" id="msg-a2d1"></div>
+    <p style="margin-top:14px;">Welche dieser Geräte liegen im selben Netz wie ein Host mit <strong>192.168.20.55/28</strong> (255.255.255.240)?</p>
     <div class="choices">
-      <label><input type="checkbox" class="pick240" value="p190"> 192.168.20.190</label>
-      <label><input type="checkbox" class="pick240" value="p196"> 192.168.20.196</label>
-      <label><input type="checkbox" class="pick240" value="p205"> 192.168.20.205</label>
-      <label><input type="checkbox" class="pick240" value="p210"> 192.168.20.210</label>
+      <label><input type="checkbox" class="pick240" value="p45"> 192.168.20.45</label>
+      <label><input type="checkbox" class="pick240" value="p52"> 192.168.20.52</label>
+      <label><input type="checkbox" class="pick240" value="p60"> 192.168.20.60</label>
+      <label><input type="checkbox" class="pick240" value="p65"> 192.168.20.65</label>
     </div>
     <div class="answer">
-      <button class="check" data-check="a2d">Prüfen</button>
+      <button class="check" data-check="a2d2">Prüfen</button>
     </div>
-    <div class="msg" id="msg-a2d"></div>
+    <div class="msg" id="msg-a2d2"></div>
   </div>
 </section>
 
@@ -813,29 +815,35 @@
       }
     },
 
-    a2d: function(){
+    a2d1: function(){
       var b = clean(document.getElementById("inBlockSize").value);
       var c = clean(document.getElementById("inNetCount").value);
-      var picks = document.querySelectorAll("input.pick240");
-      var sel = [];
-      for (var i = 0; i < picks.length; i++) if (picks[i].checked) sel.push(picks[i].value);
-      if (b === "" || c === ""){ say("msg-a2d", "Es fehlt noch eine Angabe.", "hint"); return; }
-      if (sel.length === 0){ say("msg-a2d", "Kreuze die passenden Geräte an.", "hint"); return; }
+      if (b === "" || c === ""){ say("msg-a2d1", "Es fehlt noch eine Angabe.", "hint"); return; }
 
       var okB = Number(b) === 16;
       var okC = Number(c) === 16;
-      var okS = sel.length === 2 && sel.indexOf("p196") > -1 && sel.indexOf("p205") > -1;
       document.getElementById("inBlockSize").classList.toggle("ok", okB);
       document.getElementById("inNetCount").classList.toggle("ok", okC);
 
-      if (okB && okC && okS){
-        say("msg-a2d", "Alles richtig.", "ok");
+      if (okB && okC){
+        say("msg-a2d1", "Beides stimmt.", "ok");
       } else if (!okB){
-        say("msg-a2d", "Die Blockgröße stimmt noch nicht. Rechne 256 minus den Wert der Subnetzmaske.", "hint");
-      } else if (!okC){
-        say("msg-a2d", "Die Anzahl der Netze stimmt noch nicht. Teile 256 durch die Blockgröße.", "hint");
+        say("msg-a2d1", "Die Blockgröße stimmt noch nicht. Rechne 256 minus den Wert der Subnetzmaske.", "hint");
       } else {
-        say("msg-a2d", "Die Auswahl stimmt noch nicht. Zähle in Schritten der Blockgröße hoch und sieh nach, in welchen Bereich die 200 fällt.", "hint");
+        say("msg-a2d1", "Die Anzahl der Netze stimmt noch nicht. Teile 256 durch die Blockgröße.", "hint");
+      }
+    },
+
+    a2d2: function(){
+      var picks = document.querySelectorAll("input.pick240");
+      var sel = [];
+      for (var i = 0; i < picks.length; i++) if (picks[i].checked) sel.push(picks[i].value);
+      if (sel.length === 0){ say("msg-a2d2", "Kreuze die passenden Geräte an.", "hint"); return; }
+
+      if (sel.length === 2 && sel.indexOf("p52") > -1 && sel.indexOf("p60") > -1){
+        say("msg-a2d2", "Richtig.", "ok");
+      } else {
+        say("msg-a2d2", "Noch nicht. Zähle in Schritten der Blockgröße hoch und sieh nach, in welchen Bereich die 55 fällt.", "hint");
       }
     },
 
