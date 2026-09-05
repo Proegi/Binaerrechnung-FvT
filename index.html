@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vom Mäuseklavier zur Subnetzmaske</title>
+<style>
+  :root{
+    --paper:#ffffff;
+    --ink:#16181d;
+    --ink-soft:#5b616e;
+    --line:#ccd2dc;
+    --field:#f1f3f7;
+    --dmx:#c8860d;
+    --dmx-bg:#fdf6e7;
+    --net:#2a5fbf;
+    --net-bg:#eef3fc;
+    --ok:#1f7a4d;
+    --hint:#9a4a12;
+    --shell:#22252c;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Inter","Segoe UI",system-ui,-apple-system,sans-serif;
+    font-size:16px;
+    line-height:1.55;
+  }
+  .sheet{max-width:860px;margin:0 auto;padding:32px 24px 72px;}
+
+  header.top{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:32px;}
+  header.top h1{font-size:1.75rem;font-weight:650;letter-spacing:-0.015em;margin:0 0 4px;}
+  header.top p{margin:0;color:var(--ink-soft);font-size:0.95rem;}
+
+  section.task{margin-bottom:44px;}
+  .task-head{display:flex;align-items:baseline;gap:12px;border-left:4px solid var(--line);padding-left:12px;margin-bottom:16px;}
+  .task-head .num{font-size:0.9rem;font-weight:700;color:var(--ink-soft);}
+  .task-head h2{font-size:1.2rem;font-weight:650;margin:0;}
+  #a1 .task-head{border-left-color:var(--dmx);}
+  #a2 .task-head{border-left-color:var(--net);}
+
+  .info{background:var(--dmx-bg);border:1px solid #eddcb6;border-radius:6px;padding:14px 16px;margin-bottom:22px;font-size:0.95rem;}
+  #a2 .info{background:var(--net-bg);border-color:#cfdcf3;}
+  .info p{margin:0 0 8px;}
+  .info p:last-child{margin-bottom:0;}
+
+  .step{margin-bottom:28px;}
+  .step h3{font-size:1rem;font-weight:650;margin:0 0 8px;}
+  .step p{margin:0 0 10px;}
+
+  /* Mäuseklavier */
+  .dip{
+    display:inline-block;background:var(--shell);border-radius:5px;
+    padding:10px 12px 8px;color:#e9ecf2;user-select:none;
+  }
+  .dip-label{font-size:0.62rem;letter-spacing:0.16em;color:#9aa2b1;margin-bottom:5px;}
+  .dip-row{display:flex;gap:5px;}
+  .dip-sw{width:22px;}
+  .dip-track{
+    height:42px;background:#0f1115;border:1px solid #3a3f4a;border-radius:2px;
+    padding:2px;display:flex;flex-direction:column;justify-content:flex-start;
+  }
+  .dip-track.off{justify-content:flex-end;}
+  .dip-lever{height:17px;background:#eceff4;border-radius:1px;}
+  .dip-track.off .dip-lever{background:#8a91a0;}
+  button.dip-track{width:100%;cursor:pointer;font:inherit;}
+  button.dip-track:focus-visible{outline:2px solid var(--dmx);outline-offset:2px;}
+  .dip-num{text-align:center;font-size:0.66rem;color:#9aa2b1;margin-top:4px;font-variant-numeric:tabular-nums;}
+
+  .dip-pair{display:flex;flex-wrap:wrap;gap:28px;margin:14px 0 6px;}
+  .dip-block{display:flex;flex-direction:column;gap:8px;}
+  .dip-caption{font-size:0.85rem;color:var(--ink-soft);}
+
+  /* Eingaben */
+  .answer{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:10px;}
+  label.field{font-size:0.9rem;color:var(--ink-soft);}
+  input[type=text]{
+    font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;
+    font-size:0.95rem;padding:7px 9px;border:1px solid var(--line);border-radius:4px;
+    background:var(--field);color:var(--ink);
+  }
+  input[type=text]:focus{outline:2px solid var(--net);outline-offset:1px;background:#fff;}
+  input.w-short{width:5.5rem;}
+  input.w-bits{width:9.5rem;letter-spacing:0.09em;}
+  input.ok{border-color:var(--ok);background:#f0f8f3;}
+  textarea{
+    width:100%;min-height:72px;font:inherit;padding:9px 10px;border:1px solid var(--line);
+    border-radius:4px;background:var(--field);resize:vertical;
+  }
+  textarea:focus{outline:2px solid var(--net);outline-offset:1px;background:#fff;}
+
+  button.check{
+    font:inherit;font-weight:600;font-size:0.88rem;padding:7px 15px;border-radius:4px;
+    border:1px solid var(--ink);background:var(--ink);color:#fff;cursor:pointer;
+  }
+  button.check:hover{background:#000;}
+  button.check:focus-visible{outline:2px solid var(--dmx);outline-offset:2px;}
+
+  .msg{font-size:0.88rem;min-height:1.3em;margin-top:8px;}
+  .msg.ok{color:var(--ok);font-weight:600;}
+  .msg.hint{color:var(--hint);}
+
+  /* Stellenwertzeile */
+  table.place{border-collapse:collapse;margin-top:8px;}
+  table.place th{
+    font-family:"SFMono-Regular",Consolas,monospace;font-size:0.82rem;font-weight:600;
+    color:var(--ink-soft);padding:0 3px 6px;text-align:center;border-bottom:1px solid var(--line);
+  }
+  table.place td{padding:6px 3px 0;text-align:center;}
+  input.bit{width:30px;text-align:center;padding:6px 0;}
+
+  /* Divisionstabelle */
+  table.div{border-collapse:collapse;font-size:0.93rem;margin-top:6px;}
+  table.div th{
+    text-align:left;font-weight:600;font-size:0.82rem;color:var(--ink-soft);
+    padding:0 8px 6px;border-bottom:1px solid var(--line);
+  }
+  table.div td{padding:3px 8px;}
+  table.div .op{font-family:"SFMono-Regular",Consolas,monospace;color:var(--ink-soft);white-space:nowrap;}
+  .dividend{display:inline-block;min-width:3.2rem;text-align:right;color:var(--ink);}
+  .dividend.empty{color:var(--line);}
+  table.div input{width:4.2rem;text-align:right;}
+
+  /* Rechenblöcke */
+  .andblock{
+    border:1px solid var(--line);border-radius:6px;padding:14px 16px;background:#fbfcfe;
+    margin-bottom:16px;
+  }
+  .andblock h4{margin:0 0 10px;font-size:0.95rem;font-weight:650;}
+  table.and{border-collapse:collapse;font-family:"SFMono-Regular",Consolas,monospace;font-size:0.95rem;}
+  table.and td{padding:2px 0;}
+  table.and td.lab{
+    font-family:"Inter","Segoe UI",system-ui,sans-serif;font-size:0.85rem;
+    padding-right:14px;white-space:nowrap;text-align:right;color:var(--ink-soft);
+  }
+  table.and td.bit{width:32px;text-align:center;}
+  table.and tr.rule td{border-top:2px solid var(--ink);padding:0;height:0;}
+  table.and tr.res td.lab{font-weight:700;color:var(--ink);}
+  table.and tr.maskrow td.bit{color:var(--net);font-weight:700;}
+  .case-gap td.bit{padding-left:6px;padding-right:6px;}
+
+  .locked{opacity:0.4;pointer-events:none;}
+  .lock-note{font-size:0.88rem;color:var(--ink-soft);margin-bottom:10px;}
+
+  .qbox{margin-top:20px;}
+  .choices{display:flex;flex-direction:column;gap:6px;margin:8px 0 4px;}
+  .choices label{font-size:0.94rem;display:flex;gap:8px;align-items:center;cursor:pointer;}
+  input[type=checkbox]{width:17px;height:17px;accent-color:var(--net);}
+
+  .oct-table{border-collapse:collapse;width:100%;margin-top:8px;}
+  .oct-table th{
+    text-align:left;font-size:0.82rem;font-weight:600;color:var(--ink-soft);
+    padding:0 10px 6px 0;border-bottom:1px solid var(--line);
+  }
+  .oct-table td{padding:7px 10px 7px 0;vertical-align:middle;}
+  .oct-table td.dev{font-size:0.93rem;}
+  .oct-table td.ip{font-family:"SFMono-Regular",Consolas,monospace;font-size:0.92rem;color:var(--ink-soft);}
+
+  @media (max-width:560px){
+    .sheet{padding:22px 15px 56px;}
+    .dip-sw{width:19px;}
+    input.bit,table.and td.bit{width:25px;}
+    table.and td.lab{font-size:0.78rem;padding-right:8px;}
+  }
+  @media print{
+    body{font-size:11.5pt;}
+    button.check{display:none;}
+    .locked{opacity:1;}
+    section.task{break-inside:avoid;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;}}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<header class="top">
+  <h1>Vom Mäuseklavier zur Subnetzmaske</h1>
+  <p>Binärzahlen lesen, schreiben und anwenden</p>
+</header>
+
+<!-- ============ AUFGABE 1 ============ -->
+<section class="task" id="a1">
+  <div class="task-head">
+    <span class="num">Aufgabe 1</span>
+    <h2>DMX-Startadresse am Mäuseklavier</h2>
+  </div>
+
+  <div class="info">
+    <p>Einige ältere Scheinwerfer bekommen ihre DMX-Startadresse über einen DIP-Schalterblock, das Mäuseklavier. Neun Schalter, jeder Schalter steht oben auf ON oder unten auf OFF.</p>
+    <p>Schalter 1 hat den Wert 1. Jeder weitere Schalter hat den doppelten Wert des vorherigen. Die Startadresse ist die Summe aller Schalter, die auf ON stehen.</p>
+  </div>
+
+  <div class="step">
+    <h3>1a Adresse ablesen</h3>
+    <p>Zwei Geräte kommen aus dem Case zurück. Lies die eingestellten Startadressen ab.</p>
+    <div class="dip-pair">
+      <div class="dip-block">
+        <div id="dipA"></div>
+        <span class="dip-caption">Gerät A</span>
+      </div>
+      <div class="dip-block">
+        <div id="dipB"></div>
+        <span class="dip-caption">Gerät B</span>
+      </div>
+    </div>
+    <div class="answer">
+      <label class="field" for="inA">Gerät A</label>
+      <input type="text" id="inA" class="w-short" inputmode="numeric" autocomplete="off">
+      <label class="field" for="inB">Gerät B</label>
+      <input type="text" id="inB" class="w-short" inputmode="numeric" autocomplete="off">
+      <button class="check" data-check="a1a">Prüfen</button>
+    </div>
+    <div class="msg" id="msg-a1a"></div>
+  </div>
+
+  <div class="step">
+    <h3>1b Als Binärzahl schreiben</h3>
+    <p>Schalter oben bedeutet 1, Schalter unten bedeutet 0. Die Schalterreihe steht dabei spiegelverkehrt zur Binärzahl: Schalter 1 ist die letzte Stelle ganz rechts, Schalter 9 die erste Stelle ganz links.</p>
+    <p>Notiere die Startadresse von <strong>Gerät A</strong> als Binärzahl mit neun Stellen.</p>
+    <table class="place">
+      <thead><tr id="placeHead"></tr></thead>
+      <tbody><tr id="placeRow"></tr></tbody>
+    </table>
+    <div class="answer">
+      <button class="check" data-check="a1b">Prüfen</button>
+    </div>
+    <div class="msg" id="msg-a1b"></div>
+  </div>
+
+  <div class="step">
+    <h3>1c Adresse einstellen</h3>
+    <p>Gerät C soll die Startadresse <strong>205</strong> bekommen. Rechne mit dem Divisionsrestverfahren. Teile fortlaufend durch 2 und notiere Ergebnis und Rest, bis das Ergebnis 0 ist. Das Ergebnis einer Zeile ist die Zahl, mit der du in der nächsten Zeile weiterrechnest. Nicht benötigte Zeilen bleiben leer.</p>
+    <p><strong>Achtung bei der Leserichtung:</strong> Die Binärzahl liest du aus der Spalte Rest von unten nach oben.</p>
+    <table class="div">
+      <thead>
+        <tr><th>Rechnung</th><th>Ergebnis</th><th>Rest</th></tr>
+      </thead>
+      <tbody id="divbody"></tbody>
+    </table>
+    <div class="answer">
+      <label class="field" for="inBin205">Binärzahl</label>
+      <input type="text" id="inBin205" class="w-bits" autocomplete="off" spellcheck="false">
+      <button class="check" data-check="a1c">Prüfen</button>
+    </div>
+    <div class="msg" id="msg-a1c"></div>
+
+    <p style="margin-top:16px;">Stelle die Adresse jetzt am Mäuseklavier von Gerät C ein. Die Schalter lassen sich anklicken.</p>
+    <div class="dip-pair">
+      <div class="dip-block">
+        <div id="dipC"></div>
+        <span class="dip-caption">Gerät C</span>
+      </div>
+    </div>
+    <div class="answer">
+      <button class="check" data-check="a1d">Einstellung prüfen</button>
+    </div>
+    <div class="msg" id="msg-a1d"></div>
+  </div>
+</section>
+
+<!-- ============ AUFGABE 2 ============ -->
+<section class="task" id="a2">
+  <div class="task-head">
+    <span class="num">Aufgabe 2</span>
+    <h2>Wer darf mit wem sprechen</h2>
+  </div>
+
+  <div class="info">
+    <p>Drei Geräte hängen am selben Switch. Alle drei haben die Subnetzmaske <strong>255.255.255.192</strong> und alle drei Adressen beginnen mit 192.168.20. Die Frage ist, ob sie deshalb auch direkt miteinander sprechen können.</p>
+    <p>Jedes Gerät legt dazu die eigene Adresse und die Maske Stelle für Stelle übereinander. Die Maske arbeitet wie eine Schablone: Wo sie eine 1 hat, lässt sie die Stelle der Adresse durch. Wo sie eine 0 hat, deckt sie ab und es bleibt eine 0.</p>
+  </div>
+
+  <div class="step">
+    <h3>2a Die vier Grundfälle</h3>
+    <p>Mehr als vier Kombinationen gibt es nicht. Trage die Ergebniszeile ein.</p>
+    <div class="andblock">
+      <table class="and" id="ruleTable"></table>
+    </div>
+    <div class="answer">
+      <button class="check" data-check="a2a">Prüfen</button>
+    </div>
+    <div class="msg" id="msg-a2a"></div>
+  </div>
+
+  <div class="step">
+    <h3>2b Vierte Oktette in Binär umrechnen</h3>
+    <p>Unterschiedlich ist bei den drei Geräten nur das vierte Oktett. Rechne deshalb nur mit dem vierten Oktett.</p>
+    <table class="oct-table">
+      <thead>
+        <tr><th>Gerät</th><th>Adresse</th><th>Viertes Oktett binär</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="dev">Subnetzmaske</td>
+          <td class="ip">255.255.255.<strong>192</strong></td>
+          <td><input type="text" class="w-bits oct" id="octMask" data-target="192" autocomplete="off" spellcheck="false"></td>
+        </tr>
+        <tr>
+          <td class="dev">Lichtpult</td>
+          <td class="ip">192.168.20.<strong>130</strong></td>
+          <td><input type="text" class="w-bits oct" id="octPult" data-target="130" autocomplete="off" spellcheck="false"></td>
+        </tr>
+        <tr>
+          <td class="dev">Media-Server</td>
+          <td class="ip">192.168.20.<strong>190</strong></td>
+          <td><input type="text" class="w-bits oct" id="octServer" data-target="190" autocomplete="off" spellcheck="false"></td>
+        </tr>
+        <tr>
+          <td class="dev">Art-Net-Node</td>
+          <td class="ip">192.168.20.<strong>200</strong></td>
+          <td><input type="text" class="w-bits oct" id="octNode" data-target="200" autocomplete="off" spellcheck="false"></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="answer">
+      <button class="check" data-check="a2b">Prüfen</button>
+    </div>
+    <div class="msg" id="msg-a2b"></div>
+  </div>
+
+  <div class="step">
+    <h3>2c Maske über die Adressen legen</h3>
+    <p class="lock-note" id="lockNoteC">Die Rechenblöcke werden frei, sobald alle vier Bitfolgen aus 2b stimmen.</p>
+    <div id="andBox" class="locked">
+      <p>Wende die Regel aus 2a auf jedes Gerät an und trage die Ergebniszeile ein.</p>
+      <div id="andBlocks"></div>
+      <div class="answer">
+        <button class="check" data-check="a2c">Prüfen</button>
+      </div>
+      <div class="msg" id="msg-a2c"></div>
+    </div>
+  </div>
+
+  <div class="step">
+    <h3>2d Auswerten</h3>
+    <p class="lock-note" id="lockNoteD">Die Fragen werden frei, sobald alle drei Ergebnisse aus 2c stimmen.</p>
+    <div id="evalBox" class="locked">
+      <div class="qbox">
+        <p><strong>Frage 1</strong><br>Vergleiche die drei Ergebniszeilen. Welche Geräte können direkt miteinander sprechen?</p>
+        <div class="choices">
+          <label><input type="checkbox" class="pick" value="pult"> Lichtpult 192.168.20.130</label>
+          <label><input type="checkbox" class="pick" value="server"> Media-Server 192.168.20.190</label>
+          <label><input type="checkbox" class="pick" value="node"> Art-Net-Node 192.168.20.200</label>
+        </div>
+        <div class="answer">
+          <button class="check" data-check="a2d1">Prüfen</button>
+        </div>
+        <div class="msg" id="msg-a2d1"></div>
+      </div>
+
+      <div class="qbox">
+        <p><strong>Frage 2</strong><br>Rechne das vierte Oktett der Ergebniszeile dieser beiden Geräte in eine Dezimalzahl um.</p>
+        <div class="answer">
+          <input type="text" id="inNetDec" class="w-short" inputmode="numeric" autocomplete="off">
+          <button class="check" data-check="a2d2">Prüfen</button>
+        </div>
+        <div class="msg" id="msg-a2d2"></div>
+      </div>
+
+      <div class="qbox">
+        <p><strong>Frage 3</strong><br>Alle drei Adressen beginnen dezimal mit 192.168.20. Warum reicht diese Information nicht aus, um zu entscheiden, wer mit wem sprechen kann?</p>
+        <textarea id="reflect1" spellcheck="false"></textarea>
+      </div>
+
+      <div class="qbox">
+        <p><strong>Frage 4</strong><br>Der Art-Net-Node bekommt eine neue Adresse: 192.168.20.129. Ändert sich etwas? Begründe mit der Rechnung.</p>
+        <textarea id="reflect2" spellcheck="false"></textarea>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Mäuseklavier ---------- */
+  var SW = 9;
+
+  function bitsFrom(value){
+    var out = [];
+    for (var i = 0; i < SW; i++) out.push(((value >> i) & 1) === 1);
+    return out;
+  }
+
+  function renderDip(host, value, interactive){
+    var state = bitsFrom(value);
+    host.innerHTML = "";
+    host.className = "dip";
+
+    var lab = document.createElement("div");
+    lab.className = "dip-label";
+    lab.textContent = "ON";
+    host.appendChild(lab);
+
+    var row = document.createElement("div");
+    row.className = "dip-row";
+
+    for (var i = 0; i < SW; i++){
+      (function(idx){
+        var col = document.createElement("div");
+        col.className = "dip-sw";
+
+        var track;
+        if (interactive){
+          track = document.createElement("button");
+          track.type = "button";
+          track.setAttribute("aria-label", "Schalter " + (idx + 1));
+          track.setAttribute("aria-pressed", state[idx] ? "true" : "false");
+          track.addEventListener("click", function(){
+            state[idx] = !state[idx];
+            track.className = "dip-track" + (state[idx] ? "" : " off");
+            track.setAttribute("aria-pressed", state[idx] ? "true" : "false");
+          });
+        } else {
+          track = document.createElement("div");
+        }
+        track.className = "dip-track" + (state[idx] ? "" : " off");
+
+        var lever = document.createElement("div");
+        lever.className = "dip-lever";
+        track.appendChild(lever);
+
+        var num = document.createElement("div");
+        num.className = "dip-num";
+        num.textContent = String(idx + 1);
+
+        col.appendChild(track);
+        col.appendChild(num);
+        row.appendChild(col);
+      })(i);
+    }
+
+    host.appendChild(row);
+
+    return {
+      value: function(){
+        var s = 0;
+        for (var i = 0; i < SW; i++) if (state[i]) s += Math.pow(2, i);
+        return s;
+      }
+    };
+  }
+
+  var VAL_A = 37;   /* 1 + 4 + 32 */
+  var VAL_B = 410;  /* 2 + 8 + 16 + 128 + 256 */
+  var TARGET_C = 205;
+
+  renderDip(document.getElementById("dipA"), VAL_A, false);
+  renderDip(document.getElementById("dipB"), VAL_B, false);
+  var dipC = renderDip(document.getElementById("dipC"), 0, true);
+
+  /* ---------- Bitzeilen-Helfer ---------- */
+  function wireBitRow(list){
+    for (var i = 0; i < list.length; i++){
+      (function(idx){
+        var el = list[idx];
+        el.addEventListener("input", function(){
+          el.value = el.value.replace(/[^01]/g, "").slice(0, 1);
+          if (el.value !== "" && idx < list.length - 1) list[idx + 1].focus();
+        });
+        el.addEventListener("keydown", function(e){
+          if (e.key === "Backspace" && el.value === "" && idx > 0){
+            list[idx - 1].focus();
+            e.preventDefault();
+          }
+        });
+      })(i);
+    }
+  }
+  function readBitRow(list){
+    var s = "";
+    for (var i = 0; i < list.length; i++) s += (list[i].value === "" ? " " : list[i].value);
+    return s;
+  }
+
+  /* ---------- Stellenwertzeile 1b ---------- */
+  var PLACES = [256,128,64,32,16,8,4,2,1];
+  var head = document.getElementById("placeHead");
+  var prow = document.getElementById("placeRow");
+  var placeInputs = [];
+  for (var p = 0; p < PLACES.length; p++){
+    var th = document.createElement("th");
+    th.textContent = String(PLACES[p]);
+    head.appendChild(th);
+
+    var td = document.createElement("td");
+    var bi = document.createElement("input");
+    bi.type = "text";
+    bi.className = "bit";
+    bi.maxLength = 1;
+    bi.autocomplete = "off";
+    bi.spellcheck = false;
+    bi.setAttribute("aria-label", "Stellenwert " + PLACES[p]);
+    td.appendChild(bi);
+    prow.appendChild(td);
+    placeInputs.push(bi);
+  }
+  wireBitRow(placeInputs);
+
+  /* ---------- Divisionstabelle 1c ---------- */
+  var ROWS = 9;
+  var body = document.getElementById("divbody");
+  var quots = [], rests = [], dividends = [];
+
+  for (var r = 0; r < ROWS; r++){
+    var tr = document.createElement("tr");
+
+    var td1 = document.createElement("td");
+    td1.className = "op";
+    var dv = document.createElement("span");
+    dv.className = "dividend";
+    if (r === 0){ dv.textContent = String(TARGET_C); }
+    else { dv.classList.add("empty"); dv.textContent = "\u2013"; }
+    td1.appendChild(dv);
+    td1.appendChild(document.createTextNode(" : 2 ="));
+    dividends.push(dv);
+
+    var td2 = document.createElement("td");
+    var q = document.createElement("input");
+    q.type = "text";
+    q.inputMode = "numeric";
+    q.autocomplete = "off";
+    td2.appendChild(q);
+    quots.push(q);
+
+    var td3 = document.createElement("td");
+    var lbl = document.createElement("span");
+    lbl.className = "op";
+    lbl.style.marginRight = "6px";
+    lbl.textContent = "Rest";
+    var rest = document.createElement("input");
+    rest.type = "text";
+    rest.inputMode = "numeric";
+    rest.autocomplete = "off";
+    rest.style.width = "3rem";
+    td3.appendChild(lbl);
+    td3.appendChild(rest);
+    rests.push(rest);
+
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    tr.appendChild(td3);
+    body.appendChild(tr);
+  }
+
+  for (var k = 0; k < ROWS; k++){
+    (function(idx){
+      quots[idx].addEventListener("input", function(){
+        quots[idx].value = quots[idx].value.replace(/[^0-9]/g, "");
+        if (idx + 1 < ROWS){
+          var v = quots[idx].value.trim();
+          if (v === ""){
+            dividends[idx + 1].textContent = "\u2013";
+            dividends[idx + 1].classList.add("empty");
+          } else {
+            dividends[idx + 1].textContent = v;
+            dividends[idx + 1].classList.remove("empty");
+          }
+        }
+      });
+    })(k);
+  }
+
+  function expectedDivision(n){
+    var steps = [];
+    while (n > 0){
+      steps.push({ q: Math.floor(n / 2), r: n % 2 });
+      n = Math.floor(n / 2);
+    }
+    return steps;
+  }
+
+  /* ---------- Helfer ---------- */
+  function say(id, text, kind){
+    var el = document.getElementById(id);
+    el.textContent = text;
+    el.className = "msg" + (kind ? " " + kind : "");
+  }
+  function clean(v){ return (v || "").replace(/\s+/g, "").trim(); }
+  function isBin(v){ return /^[01]+$/.test(v); }
+  function binVal(v){ return parseInt(v, 2); }
+  function pad8(n){
+    var s = n.toString(2);
+    while (s.length < 8) s = "0" + s;
+    return s;
+  }
+
+  function fixedRow(label, bits, cls){
+    var tr = document.createElement("tr");
+    if (cls) tr.className = cls;
+    var lab = document.createElement("td");
+    lab.className = "lab";
+    lab.textContent = label;
+    tr.appendChild(lab);
+    for (var i = 0; i < bits.length; i++){
+      var td = document.createElement("td");
+      td.className = "bit";
+      td.textContent = bits.charAt(i);
+      tr.appendChild(td);
+    }
+    return tr;
+  }
+  function ruleLine(cols){
+    var tr = document.createElement("tr");
+    tr.className = "rule";
+    var td = document.createElement("td");
+    td.colSpan = cols + 1;
+    tr.appendChild(td);
+    return tr;
+  }
+  function inputRow(label, count, store, aria){
+    var tr = document.createElement("tr");
+    tr.className = "res";
+    var lab = document.createElement("td");
+    lab.className = "lab";
+    lab.textContent = label;
+    tr.appendChild(lab);
+    for (var i = 0; i < count; i++){
+      var td = document.createElement("td");
+      td.className = "bit";
+      var inp = document.createElement("input");
+      inp.type = "text";
+      inp.className = "bit";
+      inp.maxLength = 1;
+      inp.autocomplete = "off";
+      inp.spellcheck = false;
+      inp.setAttribute("aria-label", aria + " " + (i + 1));
+      td.appendChild(inp);
+      tr.appendChild(td);
+      store.push(inp);
+    }
+    wireBitRow(store);
+    return tr;
+  }
+
+  /* ---------- 2a Grundfälle ---------- */
+  var CASE_ADR  = "1100";
+  var CASE_MASK = "1010";
+  var ruleInputs = [];
+  (function(){
+    var t = document.getElementById("ruleTable");
+    t.appendChild(fixedRow("Adresse", CASE_ADR, "case-gap"));
+    t.appendChild(fixedRow("Maske", CASE_MASK, "maskrow case-gap"));
+    t.appendChild(ruleLine(4));
+    t.appendChild(inputRow("Ergebnis", 4, ruleInputs, "Ergebnisbit Grundfall"));
+    t.rows[3].className += " case-gap";
+  })();
+
+  /* ---------- Rechenblöcke 2c ---------- */
+  var DEVICES = [
+    { key: "pult",   label: "Lichtpult",    dec: 130, field: "octPult" },
+    { key: "server", label: "Media-Server", dec: 190, field: "octServer" },
+    { key: "node",   label: "Art-Net-Node", dec: 200, field: "octNode" }
+  ];
+  var MASK_DEC = 192;
+  var andRows = {};
+
+  function buildAndBlocks(){
+    var host = document.getElementById("andBlocks");
+    host.innerHTML = "";
+    andRows = {};
+
+    for (var d = 0; d < DEVICES.length; d++){
+      (function(dev){
+        var wrap = document.createElement("div");
+        wrap.className = "andblock";
+
+        var h = document.createElement("h4");
+        h.textContent = dev.label + "  192.168.20." + dev.dec;
+        wrap.appendChild(h);
+
+        var tbl = document.createElement("table");
+        tbl.className = "and";
+        tbl.appendChild(fixedRow("Adresse", pad8(dev.dec), null));
+        tbl.appendChild(fixedRow("Maske", pad8(MASK_DEC), "maskrow"));
+        tbl.appendChild(ruleLine(8));
+
+        var inputs = [];
+        tbl.appendChild(inputRow("Ergebnis", 8, inputs, dev.label + " Ergebnisbit"));
+        andRows[dev.key] = inputs;
+
+        wrap.appendChild(tbl);
+        host.appendChild(wrap);
+      })(DEVICES[d]);
+    }
+  }
+
+  /* ---------- Prüfungen ---------- */
+  var checks = {
+    a1a: function(){
+      var a = clean(document.getElementById("inA").value);
+      var b = clean(document.getElementById("inB").value);
+      if (a === "" || b === ""){ say("msg-a1a", "Trage beide Adressen ein.", "hint"); return; }
+      var okA = Number(a) === VAL_A;
+      var okB = Number(b) === VAL_B;
+      document.getElementById("inA").classList.toggle("ok", okA);
+      document.getElementById("inB").classList.toggle("ok", okB);
+      if (okA && okB){ say("msg-a1a", "Beide Adressen stimmen.", "ok"); }
+      else if (!okA && !okB){ say("msg-a1a", "Beide Werte stimmen noch nicht. Prüfe, welchen Wert jeder einzelne Schalter hat.", "hint"); }
+      else { say("msg-a1a", "Ein Wert stimmt, der andere noch nicht.", "hint"); }
+    },
+
+    a1b: function(){
+      var s = readBitRow(placeInputs);
+      if (s.indexOf(" ") > -1){ say("msg-a1b", "Es fehlt noch mindestens eine Stelle. Auch die Nullen eintragen.", "hint"); return; }
+      var ok = binVal(s) === VAL_A;
+      for (var i = 0; i < placeInputs.length; i++) placeInputs[i].classList.toggle("ok", ok);
+      if (ok){ say("msg-a1b", "Die Binärzahl stimmt.", "ok"); }
+      else { say("msg-a1b", "Noch nicht. Beginne beim rechten Feld mit Schalter 1 und arbeite dich nach links vor.", "hint"); }
+    },
+
+    a1c: function(){
+      var exp = expectedDivision(TARGET_C);
+      for (var i = 0; i < ROWS; i++){
+        var qv = clean(quots[i].value);
+        var rv = clean(rests[i].value);
+        if (i < exp.length){
+          if (qv === "" || rv === ""){ say("msg-a1c", "Zeile " + (i + 1) + " ist noch nicht vollständig.", "hint"); return; }
+          if (Number(qv) !== exp[i].q || Number(rv) !== exp[i].r){
+            say("msg-a1c", "In Zeile " + (i + 1) + " steckt noch ein Fehler.", "hint"); return;
+          }
+        } else if (qv !== "" || rv !== ""){
+          say("msg-a1c", "Zeile " + (i + 1) + " wird nicht mehr gebraucht. Das Verfahren endet, sobald das Ergebnis 0 ist.", "hint"); return;
+        }
+      }
+      var bin = clean(document.getElementById("inBin205").value);
+      if (bin === ""){ say("msg-a1c", "Die Tabelle stimmt. Trage jetzt die Binärzahl ein.", "hint"); return; }
+      if (!isBin(bin)){ say("msg-a1c", "In der Binärzahl dürfen nur 0 und 1 stehen.", "hint"); return; }
+      if (binVal(bin) !== TARGET_C){
+        say("msg-a1c", "Deine Bitfolge ergibt nicht 205. Achte auf die Leserichtung der Reste.", "hint"); return;
+      }
+      document.getElementById("inBin205").classList.add("ok");
+      say("msg-a1c", "Tabelle und Binärzahl stimmen.", "ok");
+    },
+
+    a1d: function(){
+      var v = dipC.value();
+      if (v === TARGET_C){ say("msg-a1d", "Gerät C steht auf der richtigen Adresse.", "ok"); }
+      else if (v === 0){ say("msg-a1d", "Es ist noch kein Schalter gesetzt.", "hint"); }
+      else { say("msg-a1d", "Die eingestellte Adresse stimmt noch nicht. Denk an die Reihenfolge aus 1b.", "hint"); }
+    },
+
+    a2a: function(){
+      var s = readBitRow(ruleInputs);
+      if (s.indexOf(" ") > -1){ say("msg-a2a", "Es fehlt noch mindestens ein Ergebnis.", "hint"); return; }
+      var exp = "";
+      for (var i = 0; i < 4; i++){
+        exp += (CASE_ADR.charAt(i) === "1" && CASE_MASK.charAt(i) === "1") ? "1" : "0";
+      }
+      var ok = (s === exp);
+      for (var j = 0; j < ruleInputs.length; j++) ruleInputs[j].classList.toggle("ok", ok);
+      if (ok){
+        say("msg-a2a", "Stimmt. Diese Verknüpfung heißt UND. Nur wenn in beiden Zeilen einer Spalte eine 1 steht, bleibt eine 1 übrig.", "ok");
+      } else {
+        say("msg-a2a", "Noch nicht. Prüfe Spalte für Spalte, ob die Maske dort durchlässt oder abdeckt.", "hint");
+      }
+    },
+
+    a2b: function(){
+      var fields = document.querySelectorAll("input.oct");
+      var allOk = true, firstMsg = "";
+      for (var i = 0; i < fields.length; i++){
+        var f = fields[i];
+        var v = clean(f.value);
+        var t = Number(f.dataset.target);
+        var ok = false, msg = "";
+        if (v === ""){ msg = "Es fehlt noch mindestens eine Bitfolge."; }
+        else if (!isBin(v)){ msg = "Es dürfen nur 0 und 1 verwendet werden."; }
+        else if (v.length !== 8){ msg = "Ein Oktett hat genau acht Stellen. Führende Nullen mitschreiben."; }
+        else if (binVal(v) > t){ msg = "Mindestens ein Wert ist zu groß."; }
+        else if (binVal(v) < t){ msg = "Mindestens ein Wert ist zu klein."; }
+        else { ok = true; }
+        f.classList.toggle("ok", ok);
+        if (!ok){ allOk = false; if (!firstMsg) firstMsg = msg; }
+      }
+      if (allOk){
+        say("msg-a2b", "Alle vier Bitfolgen stimmen.", "ok");
+        buildAndBlocks();
+        document.getElementById("andBox").classList.remove("locked");
+        document.getElementById("lockNoteC").style.display = "none";
+      } else {
+        say("msg-a2b", firstMsg, "hint");
+      }
+    },
+
+    a2c: function(){
+      var allOk = true, wrong = [];
+      for (var d = 0; d < DEVICES.length; d++){
+        var dev = DEVICES[d];
+        var inputs = andRows[dev.key];
+        if (!inputs){ say("msg-a2c", "Bearbeite zuerst Aufgabe 2b.", "hint"); return; }
+        var s = readBitRow(inputs);
+        if (s.indexOf(" ") > -1){ say("msg-a2c", "Bei " + dev.label + " fehlt noch mindestens eine Stelle.", "hint"); return; }
+        var ok = (s === pad8(dev.dec & MASK_DEC));
+        for (var i = 0; i < inputs.length; i++) inputs[i].classList.toggle("ok", ok);
+        if (!ok){ allOk = false; wrong.push(dev.label); }
+      }
+      if (allOk){
+        say("msg-a2c", "Alle drei Ergebnisse stimmen. Vergleiche sie jetzt untereinander.", "ok");
+        document.getElementById("evalBox").classList.remove("locked");
+        document.getElementById("lockNoteD").style.display = "none";
+      } else {
+        say("msg-a2c", "Bei " + wrong.join(" und ") + " stimmt es noch nicht. Wende die Regel aus 2a Spalte für Spalte an.", "hint");
+      }
+    },
+
+    a2d1: function(){
+      var picks = document.querySelectorAll("input.pick");
+      var sel = [];
+      for (var i = 0; i < picks.length; i++) if (picks[i].checked) sel.push(picks[i].value);
+      if (sel.length === 0){ say("msg-a2d1", "Wähle die Geräte aus.", "hint"); return; }
+      var correct = sel.length === 2 && sel.indexOf("pult") > -1 && sel.indexOf("server") > -1;
+      if (correct){
+        say("msg-a2d1", "Richtig. Diese beiden haben nach der Verrechnung dasselbe Ergebnis.", "ok");
+      } else if (sel.length === 3){
+        say("msg-a2d1", "Vergleiche die Ergebniszeilen noch einmal genau. Sind wirklich alle drei gleich?", "hint");
+      } else {
+        say("msg-a2d1", "Noch nicht. Entscheidend ist allein die Zeile unter dem Strich.", "hint");
+      }
+    },
+
+    a2d2: function(){
+      var v = clean(document.getElementById("inNetDec").value);
+      if (v === ""){ say("msg-a2d2", "Trage eine Zahl ein.", "hint"); return; }
+      if (Number(v) === (130 & MASK_DEC)){
+        document.getElementById("inNetDec").classList.add("ok");
+        say("msg-a2d2", "Stimmt. Das Ergebnis der Verrechnung heißt Netzadresse, hier 192.168.20." + v + ".", "ok");
+      } else {
+        say("msg-a2d2", "Noch nicht. Addiere die Stellenwerte über den Einsen deiner Ergebniszeile.", "hint");
+      }
+    }
+  };
+
+  var btns = document.querySelectorAll("button.check");
+  for (var b = 0; b < btns.length; b++){
+    (function(btn){
+      btn.addEventListener("click", function(){ checks[btn.dataset.check](); });
+    })(btns[b]);
+  }
+})();
+</script>
+</body>
+</html>
