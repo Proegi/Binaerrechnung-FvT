@@ -18,6 +18,7 @@
     --ok:#1f7a4d;
     --hint:#9a4a12;
     --shell:#22252c;
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
   }
   *{box-sizing:border-box;}
   html{-webkit-text-size-adjust:100%;}
@@ -29,7 +30,7 @@
     font-size:16px;
     line-height:1.55;
   }
-  .sheet{max-width:860px;margin:0 auto;padding:32px 24px 72px;}
+  .sheet{max-width:900px;margin:0 auto;padding:32px 24px 72px;}
 
   header.top{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:32px;}
   header.top h1{font-size:1.75rem;font-weight:650;letter-spacing:-0.015em;margin:0 0 4px;}
@@ -46,6 +47,15 @@
   #a2 .info{background:var(--net-bg);border-color:#cfdcf3;}
   .info p{margin:0 0 8px;}
   .info p:last-child{margin-bottom:0;}
+  .info-split{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;}
+  .info-split .txt{flex:1 1 340px;min-width:0;}
+
+  table.truth{border-collapse:collapse;font-family:var(--mono);font-size:0.95rem;background:#fff;}
+  table.truth th,table.truth td{
+    border:1px solid var(--line);width:38px;height:34px;text-align:center;padding:0;
+  }
+  table.truth th{background:#e5edfa;color:var(--net);font-weight:700;}
+  table.truth th.corner{font-size:1.05rem;}
 
   .step{margin-bottom:28px;}
   .step h3{font-size:1rem;font-weight:650;margin:0 0 8px;}
@@ -78,19 +88,13 @@
   .answer{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:10px;}
   label.field{font-size:0.9rem;color:var(--ink-soft);}
   input[type=text]{
-    font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;
-    font-size:0.95rem;padding:7px 9px;border:1px solid var(--line);border-radius:4px;
-    background:var(--field);color:var(--ink);
+    font-family:var(--mono);font-size:0.95rem;padding:7px 9px;
+    border:1px solid var(--line);border-radius:4px;background:var(--field);color:var(--ink);
   }
   input[type=text]:focus{outline:2px solid var(--net);outline-offset:1px;background:#fff;}
   input.w-short{width:5.5rem;}
-  input.w-bits{width:9.5rem;letter-spacing:0.09em;}
+  input.w-bits{width:11rem;letter-spacing:0.09em;}
   input.ok{border-color:var(--ok);background:#f0f8f3;}
-  textarea{
-    width:100%;min-height:72px;font:inherit;padding:9px 10px;border:1px solid var(--line);
-    border-radius:4px;background:var(--field);resize:vertical;
-  }
-  textarea:focus{outline:2px solid var(--net);outline-offset:1px;background:#fff;}
 
   button.check{
     font:inherit;font-weight:600;font-size:0.88rem;padding:7px 15px;border-radius:4px;
@@ -103,15 +107,6 @@
   .msg.ok{color:var(--ok);font-weight:600;}
   .msg.hint{color:var(--hint);}
 
-  /* Stellenwertzeile */
-  table.place{border-collapse:collapse;margin-top:8px;}
-  table.place th{
-    font-family:"SFMono-Regular",Consolas,monospace;font-size:0.82rem;font-weight:600;
-    color:var(--ink-soft);padding:0 3px 6px;text-align:center;border-bottom:1px solid var(--line);
-  }
-  table.place td{padding:6px 3px 0;text-align:center;}
-  input.bit{width:30px;text-align:center;padding:6px 0;}
-
   /* Divisionstabelle */
   table.div{border-collapse:collapse;font-size:0.93rem;margin-top:6px;}
   table.div th{
@@ -119,7 +114,7 @@
     padding:0 8px 6px;border-bottom:1px solid var(--line);
   }
   table.div td{padding:3px 8px;}
-  table.div .op{font-family:"SFMono-Regular",Consolas,monospace;color:var(--ink-soft);white-space:nowrap;}
+  table.div .op{font-family:var(--mono);color:var(--ink-soft);white-space:nowrap;}
   .dividend{display:inline-block;min-width:3.2rem;text-align:right;color:var(--ink);}
   .dividend.empty{color:var(--line);}
   table.div input{width:4.2rem;text-align:right;}
@@ -127,43 +122,77 @@
   /* Rechenblöcke */
   .andblock{
     border:1px solid var(--line);border-radius:6px;padding:14px 16px;background:#fbfcfe;
-    margin-bottom:16px;
+    margin-bottom:16px;overflow-x:auto;
   }
   .andblock h4{margin:0 0 10px;font-size:0.95rem;font-weight:650;}
-  table.and{border-collapse:collapse;font-family:"SFMono-Regular",Consolas,monospace;font-size:0.95rem;}
-  table.and td{padding:2px 0;}
-  table.and td.lab{
-    font-family:"Inter","Segoe UI",system-ui,sans-serif;font-size:0.85rem;
-    padding-right:14px;white-space:nowrap;text-align:right;color:var(--ink-soft);
+  table.calc{border-collapse:collapse;}
+  table.calc td{padding:3px 0;vertical-align:middle;}
+  table.calc td.lab{
+    font-size:0.85rem;text-align:right;padding-right:16px;white-space:nowrap;color:var(--ink-soft);
   }
-  table.and td.bit{width:32px;text-align:center;}
-  table.and tr.rule td{border-top:2px solid var(--ink);padding:0;height:0;}
-  table.and tr.res td.lab{font-weight:700;color:var(--ink);}
-  table.and tr.maskrow td.bit{color:var(--net);font-weight:700;}
-  .case-gap td.bit{padding-left:6px;padding-right:6px;}
+  table.calc td.lab b{color:var(--ink);font-weight:600;}
+  table.calc td.dot{
+    font-family:var(--mono);color:var(--ink-soft);width:10px;text-align:center;
+  }
+  table.calc tr.rule td{border-top:2px solid var(--ink);padding:0;height:0;}
+  table.calc tr.res td.lab{color:var(--ink);font-weight:600;}
+  table.calc tr.maskrow td.bf{color:var(--net);font-weight:700;}
+  table.calc tr.resrow td.lab{color:var(--ink);font-weight:600;}
+  table.calc tr.resrow td.bf{font-weight:600;}
+
+  .blocks{
+    display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;
+    margin:8px 0 14px;background:#fff;
+  }
+  .blocks div{
+    flex:1;text-align:center;padding:9px 2px;border-right:1px solid var(--line);
+    font-family:var(--mono);font-size:0.82rem;
+  }
+  .blocks div:last-child{border-right:none;}
+  .blocks div span{display:block;color:var(--net);font-weight:700;font-size:0.9rem;}
+
+  table.steps{border-collapse:collapse;margin-bottom:4px;}
+  table.steps td{padding:3px 0;}
+  table.steps td.lab{
+    font-size:0.85rem;color:var(--ink-soft);padding-right:20px;white-space:nowrap;
+  }
+  table.steps td.frm{font-family:var(--mono);font-size:0.95rem;}
+
+  .note{
+    border-left:3px solid var(--net);background:#f6f9fe;padding:10px 14px;
+    font-size:0.93rem;margin:0 0 14px;
+  }
+  .note p{margin:0;}
+
+  .bf{
+    font-family:var(--mono);font-size:0.95rem;letter-spacing:0.34em;
+    text-align:center;white-space:nowrap;
+  }
+  td.bf{padding:4px 0;}
+  .bf-8{width:134px;}
+  .bf-4{width:78px;}
+  input.bf{
+    padding:6px 0;border:1px solid var(--line);border-radius:4px;
+    background:var(--field);color:var(--ink);
+  }
+  input.bf:focus{outline:2px solid var(--net);outline-offset:1px;background:#fff;}
+  input.bf.ok{border-color:var(--ok);background:#f0f8f3;}
 
   .locked{opacity:0.4;pointer-events:none;}
   .lock-note{font-size:0.88rem;color:var(--ink-soft);margin-bottom:10px;}
 
-  .qbox{margin-top:20px;}
+  .qbox{margin-top:18px;}
   .choices{display:flex;flex-direction:column;gap:6px;margin:8px 0 4px;}
   .choices label{font-size:0.94rem;display:flex;gap:8px;align-items:center;cursor:pointer;}
   input[type=checkbox]{width:17px;height:17px;accent-color:var(--net);}
 
-  .oct-table{border-collapse:collapse;width:100%;margin-top:8px;}
-  .oct-table th{
-    text-align:left;font-size:0.82rem;font-weight:600;color:var(--ink-soft);
-    padding:0 10px 6px 0;border-bottom:1px solid var(--line);
-  }
-  .oct-table td{padding:7px 10px 7px 0;vertical-align:middle;}
-  .oct-table td.dev{font-size:0.93rem;}
-  .oct-table td.ip{font-family:"SFMono-Regular",Consolas,monospace;font-size:0.92rem;color:var(--ink-soft);}
-
-  @media (max-width:560px){
+  @media (max-width:600px){
     .sheet{padding:22px 15px 56px;}
     .dip-sw{width:19px;}
-    input.bit,table.and td.bit{width:25px;}
-    table.and td.lab{font-size:0.78rem;padding-right:8px;}
+    .bf{font-size:0.85rem;letter-spacing:0.2em;}
+    .bf-8{width:100px;}
+    .bf-4{width:60px;}
+    table.calc td.lab{font-size:0.78rem;padding-right:8px;}
   }
   @media print{
     body{font-size:11.5pt;}
@@ -220,12 +249,10 @@
   <div class="step">
     <h3>1b Als Binärzahl schreiben</h3>
     <p>Schalter oben bedeutet 1, Schalter unten bedeutet 0. Die Schalterreihe steht dabei spiegelverkehrt zur Binärzahl: Schalter 1 ist die letzte Stelle ganz rechts, Schalter 9 die erste Stelle ganz links.</p>
-    <p>Notiere die Startadresse von <strong>Gerät A</strong> als Binärzahl mit neun Stellen.</p>
-    <table class="place">
-      <thead><tr id="placeHead"></tr></thead>
-      <tbody><tr id="placeRow"></tr></tbody>
-    </table>
+    <p>Notiere die Startadresse von <strong>Gerät A</strong> als Binärzahl.</p>
     <div class="answer">
+      <label class="field" for="inBinA">Binärzahl</label>
+      <input type="text" id="inBinA" class="w-bits" autocomplete="off" spellcheck="false">
       <button class="check" data-check="a1b">Prüfen</button>
     </div>
     <div class="msg" id="msg-a1b"></div>
@@ -270,15 +297,24 @@
   </div>
 
   <div class="info">
-    <p>Drei Geräte hängen am selben Switch. Alle drei haben die Subnetzmaske <strong>255.255.255.192</strong> und alle drei Adressen beginnen mit 192.168.20. Die Frage ist, ob sie deshalb auch direkt miteinander sprechen können.</p>
-    <p>Jedes Gerät legt dazu die eigene Adresse und die Maske Stelle für Stelle übereinander. Die Maske arbeitet wie eine Schablone: Wo sie eine 1 hat, lässt sie die Stelle der Adresse durch. Wo sie eine 0 hat, deckt sie ab und es bleibt eine 0.</p>
+    <div class="info-split">
+      <div class="txt">
+        <p>Drei Geräte hängen am selben Switch. Alle drei Adressen beginnen mit 192.168.20 und alle drei haben dieselbe Subnetzmaske. Die Frage ist, ob sie deshalb auch direkt miteinander sprechen können.</p>
+        <p>Jedes Gerät schreibt dazu die eigene Adresse und die eigene Subnetzmaske binär übereinander und darunter eine neue Ergebniszeile. Verknüpft wird spaltenweise mit einem logischen UND, geschrieben als &#8743;. Stehen in einer Spalte zwei Einsen, ist das Ergebnis 1. In jedem anderen Fall 0.</p>
+      </div>
+      <table class="truth">
+        <tr><th class="corner">&#8743;</th><th>0</th><th>1</th></tr>
+        <tr><th>0</th><td>0</td><td>0</td></tr>
+        <tr><th>1</th><td>0</td><td>1</td></tr>
+      </table>
+    </div>
   </div>
 
   <div class="step">
     <h3>2a Die vier Grundfälle</h3>
     <p>Mehr als vier Kombinationen gibt es nicht. Trage die Ergebniszeile ein.</p>
     <div class="andblock">
-      <table class="and" id="ruleTable"></table>
+      <table class="calc" id="ruleTable"></table>
     </div>
     <div class="answer">
       <button class="check" data-check="a2a">Prüfen</button>
@@ -287,35 +323,12 @@
   </div>
 
   <div class="step">
-    <h3>2b Vierte Oktette in Binär umrechnen</h3>
-    <p>Unterschiedlich ist bei den drei Geräten nur das vierte Oktett. Rechne deshalb nur mit dem vierten Oktett.</p>
-    <table class="oct-table">
-      <thead>
-        <tr><th>Gerät</th><th>Adresse</th><th>Viertes Oktett binär</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="dev">Subnetzmaske</td>
-          <td class="ip">255.255.255.<strong>192</strong></td>
-          <td><input type="text" class="w-bits oct" id="octMask" data-target="192" autocomplete="off" spellcheck="false"></td>
-        </tr>
-        <tr>
-          <td class="dev">Lichtpult</td>
-          <td class="ip">192.168.20.<strong>130</strong></td>
-          <td><input type="text" class="w-bits oct" id="octPult" data-target="130" autocomplete="off" spellcheck="false"></td>
-        </tr>
-        <tr>
-          <td class="dev">Media-Server</td>
-          <td class="ip">192.168.20.<strong>190</strong></td>
-          <td><input type="text" class="w-bits oct" id="octServer" data-target="190" autocomplete="off" spellcheck="false"></td>
-        </tr>
-        <tr>
-          <td class="dev">Art-Net-Node</td>
-          <td class="ip">192.168.20.<strong>200</strong></td>
-          <td><input type="text" class="w-bits oct" id="octNode" data-target="200" autocomplete="off" spellcheck="false"></td>
-        </tr>
-      </tbody>
-    </table>
+    <h3>2b Adresse und Subnetzmaske verrechnen</h3>
+    <p>Die Binärzahlen sind bereits eingetragen. Verknüpfe jede Spalte mit UND und trage die Ergebniszeile ein.</p>
+    <div class="note">
+      <p>Sieh dir die Subnetzmaske genau an: Die Einsen stehen immer am Stück am Anfang. Sobald die erste 0 kommt, darf keine 1 mehr folgen. Eine Subnetzmaske wie 255.255.255.161 gibt es deshalb nicht.</p>
+    </div>
+    <div id="andBlocks"></div>
     <div class="answer">
       <button class="check" data-check="a2b">Prüfen</button>
     </div>
@@ -323,54 +336,65 @@
   </div>
 
   <div class="step">
-    <h3>2c Maske über die Adressen legen</h3>
-    <p class="lock-note" id="lockNoteC">Die Rechenblöcke werden frei, sobald alle vier Bitfolgen aus 2b stimmen.</p>
-    <div id="andBox" class="locked">
-      <p>Wende die Regel aus 2a auf jedes Gerät an und trage die Ergebniszeile ein.</p>
-      <div id="andBlocks"></div>
-      <div class="answer">
-        <button class="check" data-check="a2c">Prüfen</button>
+    <h3>2c Auswerten</h3>
+    <p class="lock-note" id="lockNoteC">Die Auswertung wird frei, sobald alle drei Ergebniszeilen aus 2b stimmen.</p>
+    <div id="evalBox" class="locked">
+      <p>Überall dort, wo die Subnetzmaske eine 1 hat, bleibt die Adresse in der Ergebniszeile stehen. Dieser Teil beschreibt das Netz. Überall dort, wo die Subnetzmaske eine 0 hat, wird die Adresse abgeschnitten. Dieser Teil beschreibt nur das einzelne Gerät bzw. den Host.</p>
+      <p>Die Ergebniszeile ist die Netzadresse. Bevor ein Gerät sendet, legt es seine Subnetzmaske auch über die Zieladresse. Kommt dieselbe Netzadresse heraus wie bei sich selbst, geht das Paket direkt über den Switch. Sonst übernimmt das Standardgateway. Weil hier alle drei Geräte dieselbe Subnetzmaske benutzen, genügt der Vergleich der drei Ergebniszeilen.</p>
+      <div class="andblock" id="compareBlock"></div>
+      <div class="qbox">
+        <p><strong>Vergleiche die drei Ergebniszeilen. Welche Geräte können direkt miteinander sprechen?</strong></p>
+        <div class="choices">
+          <label><input type="checkbox" class="pick" value="pult"> Lichtpult</label>
+          <label><input type="checkbox" class="pick" value="server"> Media-Server</label>
+          <label><input type="checkbox" class="pick" value="node"> Art-Net-Node</label>
+        </div>
+        <div class="answer">
+          <button class="check" data-check="a2c">Prüfen</button>
+        </div>
+        <div class="msg" id="msg-a2c"></div>
       </div>
-      <div class="msg" id="msg-a2c"></div>
     </div>
   </div>
 
   <div class="step">
-    <h3>2d Auswerten</h3>
-    <p class="lock-note" id="lockNoteD">Die Fragen werden frei, sobald alle drei Ergebnisse aus 2c stimmen.</p>
-    <div id="evalBox" class="locked">
-      <div class="qbox">
-        <p><strong>Frage 1</strong><br>Vergleiche die drei Ergebniszeilen. Welche Geräte können direkt miteinander sprechen?</p>
-        <div class="choices">
-          <label><input type="checkbox" class="pick" value="pult"> Lichtpult 192.168.20.130</label>
-          <label><input type="checkbox" class="pick" value="server"> Media-Server 192.168.20.190</label>
-          <label><input type="checkbox" class="pick" value="node"> Art-Net-Node 192.168.20.200</label>
-        </div>
-        <div class="answer">
-          <button class="check" data-check="a2d1">Prüfen</button>
-        </div>
-        <div class="msg" id="msg-a2d1"></div>
-      </div>
-
-      <div class="qbox">
-        <p><strong>Frage 2</strong><br>Rechne das vierte Oktett der Ergebniszeile dieser beiden Geräte in eine Dezimalzahl um.</p>
-        <div class="answer">
-          <input type="text" id="inNetDec" class="w-short" inputmode="numeric" autocomplete="off">
-          <button class="check" data-check="a2d2">Prüfen</button>
-        </div>
-        <div class="msg" id="msg-a2d2"></div>
-      </div>
-
-      <div class="qbox">
-        <p><strong>Frage 3</strong><br>Alle drei Adressen beginnen dezimal mit 192.168.20. Warum reicht diese Information nicht aus, um zu entscheiden, wer mit wem sprechen kann?</p>
-        <textarea id="reflect1" spellcheck="false"></textarea>
-      </div>
-
-      <div class="qbox">
-        <p><strong>Frage 4</strong><br>Der Art-Net-Node bekommt eine neue Adresse: 192.168.20.129. Ändert sich etwas? Begründe mit der Rechnung.</p>
-        <textarea id="reflect2" spellcheck="false"></textarea>
+    <h3>2d Wie die Subnetzmaske das Oktett aufteilt</h3>
+    <p>Wegen der Regel aus 2b kann höchstens ein Oktett der Subnetzmaske einen Wert zwischen 0 und 255 haben, alle anderen sind 255 oder 0. Genau dieses eine Oktett zerlegt den Adressbereich in gleich große Blöcke. Im Beispiel ist es das vierte, es kann aber genauso das zweite oder dritte sein.</p>
+    <div class="andblock">
+      <h4>Beispiel 255.255.255.192</h4>
+      <table class="steps">
+        <tr><td class="lab">Blockgröße</td><td class="frm">256 - 192 = 64</td></tr>
+        <tr><td class="lab">Anzahl der Netze</td><td class="frm">256 : 64 = 4</td></tr>
+        <tr><td class="lab">Netzadressen</td><td class="frm">0, 64, 128, 192</td></tr>
+      </table>
+      <div class="blocks">
+        <div><span>.0</span>0 bis 63</div>
+        <div><span>.64</span>64 bis 127</div>
+        <div><span>.128</span>128 bis 191</div>
+        <div><span>.192</span>192 bis 255</div>
       </div>
     </div>
+    <p>Merke: Die Netzadressen sind die Vielfachen der Blockgröße. Du zählst also in Schritten der Blockgröße von 0 bis 256 hoch.</p>
+    <p>Kurz schreibt man ein Netz mit der Anzahl der Einsen in der Subnetzmaske. 255.255.255.192 hat 26 Einsen, also /26. Genau deshalb liegen 192.168.20.10/26 und 192.168.20.50/26 beide im Netz 192.168.20.0, während 192.168.20.200/26 zu einem anderen Netz gehört.</p>
+
+    <p style="margin-top:16px;">Jetzt mit der Subnetzmaske <strong>255.255.255.240</strong>.</p>
+    <div class="answer">
+      <label class="field" for="inBlockSize">Blockgröße</label>
+      <input type="text" id="inBlockSize" class="w-short" inputmode="numeric" autocomplete="off">
+      <label class="field" for="inNetCount">Anzahl der Netze</label>
+      <input type="text" id="inNetCount" class="w-short" inputmode="numeric" autocomplete="off">
+    </div>
+    <p style="margin-top:14px;">Welche dieser Geräte liegen im selben Netz wie <strong>192.168.20.200</strong>?</p>
+    <div class="choices">
+      <label><input type="checkbox" class="pick240" value="p190"> 192.168.20.190</label>
+      <label><input type="checkbox" class="pick240" value="p196"> 192.168.20.196</label>
+      <label><input type="checkbox" class="pick240" value="p205"> 192.168.20.205</label>
+      <label><input type="checkbox" class="pick240" value="p210"> 192.168.20.210</label>
+    </div>
+    <div class="answer">
+      <button class="check" data-check="a2d">Prüfen</button>
+    </div>
+    <div class="msg" id="msg-a2d"></div>
   </div>
 </section>
 
@@ -455,54 +479,6 @@
   renderDip(document.getElementById("dipA"), VAL_A, false);
   renderDip(document.getElementById("dipB"), VAL_B, false);
   var dipC = renderDip(document.getElementById("dipC"), 0, true);
-
-  /* ---------- Bitzeilen-Helfer ---------- */
-  function wireBitRow(list){
-    for (var i = 0; i < list.length; i++){
-      (function(idx){
-        var el = list[idx];
-        el.addEventListener("input", function(){
-          el.value = el.value.replace(/[^01]/g, "").slice(0, 1);
-          if (el.value !== "" && idx < list.length - 1) list[idx + 1].focus();
-        });
-        el.addEventListener("keydown", function(e){
-          if (e.key === "Backspace" && el.value === "" && idx > 0){
-            list[idx - 1].focus();
-            e.preventDefault();
-          }
-        });
-      })(i);
-    }
-  }
-  function readBitRow(list){
-    var s = "";
-    for (var i = 0; i < list.length; i++) s += (list[i].value === "" ? " " : list[i].value);
-    return s;
-  }
-
-  /* ---------- Stellenwertzeile 1b ---------- */
-  var PLACES = [256,128,64,32,16,8,4,2,1];
-  var head = document.getElementById("placeHead");
-  var prow = document.getElementById("placeRow");
-  var placeInputs = [];
-  for (var p = 0; p < PLACES.length; p++){
-    var th = document.createElement("th");
-    th.textContent = String(PLACES[p]);
-    head.appendChild(th);
-
-    var td = document.createElement("td");
-    var bi = document.createElement("input");
-    bi.type = "text";
-    bi.className = "bit";
-    bi.maxLength = 1;
-    bi.autocomplete = "off";
-    bi.spellcheck = false;
-    bi.setAttribute("aria-label", "Stellenwert " + PLACES[p]);
-    td.appendChild(bi);
-    prow.appendChild(td);
-    placeInputs.push(bi);
-  }
-  wireBitRow(placeInputs);
 
   /* ---------- Divisionstabelle 1c ---------- */
   var ROWS = 9;
@@ -591,52 +567,81 @@
     while (s.length < 8) s = "0" + s;
     return s;
   }
+  function octets(str){ return str.split("."); }
+  function toBinOctets(dotted){
+    var parts = dotted.split(".");
+    var out = [];
+    for (var i = 0; i < parts.length; i++) out.push(pad8(Number(parts[i])));
+    return out;
+  }
+  function andOctets(a, b){
+    var out = [];
+    for (var i = 0; i < a.length; i++) out.push(pad8(binVal(a[i]) & binVal(b[i])));
+    return out;
+  }
+  function limitBits(el, max){
+    el.addEventListener("input", function(){
+      el.value = el.value.replace(/[^01]/g, "").slice(0, max);
+    });
+  }
 
-  function fixedRow(label, bits, cls){
+  /* ---------- Zeilenbau ---------- */
+  function labelCell(top, sub){
+    var td = document.createElement("td");
+    td.className = "lab";
+    if (sub){ td.innerHTML = top + " <b>" + sub + "</b>"; }
+    else { td.textContent = top; }
+    return td;
+  }
+  function fixedRow(labTop, labSub, groups, cls){
     var tr = document.createElement("tr");
     if (cls) tr.className = cls;
-    var lab = document.createElement("td");
-    lab.className = "lab";
-    lab.textContent = label;
-    tr.appendChild(lab);
-    for (var i = 0; i < bits.length; i++){
+    tr.appendChild(labelCell(labTop, labSub));
+    for (var i = 0; i < groups.length; i++){
+      if (i > 0){
+        var dot = document.createElement("td");
+        dot.className = "dot";
+        dot.textContent = ".";
+        tr.appendChild(dot);
+      }
       var td = document.createElement("td");
-      td.className = "bit";
-      td.textContent = bits.charAt(i);
+      td.className = "bf bf-" + groups[i].length;
+      td.textContent = groups[i];
       tr.appendChild(td);
     }
     return tr;
   }
-  function ruleLine(cols){
+  function ruleRow(cols){
     var tr = document.createElement("tr");
     tr.className = "rule";
     var td = document.createElement("td");
-    td.colSpan = cols + 1;
+    td.colSpan = cols;
     tr.appendChild(td);
     return tr;
   }
-  function inputRow(label, count, store, aria){
+  function inputRow(labTop, groups, store, aria){
     var tr = document.createElement("tr");
     tr.className = "res";
-    var lab = document.createElement("td");
-    lab.className = "lab";
-    lab.textContent = label;
-    tr.appendChild(lab);
-    for (var i = 0; i < count; i++){
+    tr.appendChild(labelCell(labTop, null));
+    for (var i = 0; i < groups.length; i++){
+      if (i > 0){
+        var dot = document.createElement("td");
+        dot.className = "dot";
+        dot.textContent = ".";
+        tr.appendChild(dot);
+      }
       var td = document.createElement("td");
-      td.className = "bit";
       var inp = document.createElement("input");
       inp.type = "text";
-      inp.className = "bit";
-      inp.maxLength = 1;
+      inp.className = "bf bf-" + groups[i];
       inp.autocomplete = "off";
       inp.spellcheck = false;
       inp.setAttribute("aria-label", aria + " " + (i + 1));
+      limitBits(inp, groups[i]);
       td.appendChild(inp);
       tr.appendChild(td);
       store.push(inp);
     }
-    wireBitRow(store);
     return tr;
   }
 
@@ -646,50 +651,64 @@
   var ruleInputs = [];
   (function(){
     var t = document.getElementById("ruleTable");
-    t.appendChild(fixedRow("Adresse", CASE_ADR, "case-gap"));
-    t.appendChild(fixedRow("Maske", CASE_MASK, "maskrow case-gap"));
-    t.appendChild(ruleLine(4));
-    t.appendChild(inputRow("Ergebnis", 4, ruleInputs, "Ergebnisbit Grundfall"));
-    t.rows[3].className += " case-gap";
+    t.appendChild(fixedRow("Adresse", null, [CASE_ADR], null));
+    t.appendChild(fixedRow("Subnetzmaske", null, [CASE_MASK], "maskrow"));
+    t.appendChild(ruleRow(2));
+    t.appendChild(inputRow("Ergebnis", [4], ruleInputs, "Ergebnis Grundfälle"));
   })();
 
-  /* ---------- Rechenblöcke 2c ---------- */
+  /* ---------- 2b Geräte ---------- */
   var DEVICES = [
-    { key: "pult",   label: "Lichtpult",    dec: 130, field: "octPult" },
-    { key: "server", label: "Media-Server", dec: 190, field: "octServer" },
-    { key: "node",   label: "Art-Net-Node", dec: 200, field: "octNode" }
+    { key: "pult",   label: "Lichtpult",    ip: "192.168.20.10",  mask: "255.255.255.192" },
+    { key: "server", label: "Media-Server", ip: "192.168.20.50",  mask: "255.255.255.192" },
+    { key: "node",   label: "Art-Net-Node", ip: "192.168.20.200", mask: "255.255.255.192" }
   ];
-  var MASK_DEC = 192;
   var andRows = {};
 
-  function buildAndBlocks(){
+  (function buildAndBlocks(){
     var host = document.getElementById("andBlocks");
-    host.innerHTML = "";
-    andRows = {};
-
     for (var d = 0; d < DEVICES.length; d++){
       (function(dev){
         var wrap = document.createElement("div");
         wrap.className = "andblock";
 
         var h = document.createElement("h4");
-        h.textContent = dev.label + "  192.168.20." + dev.dec;
+        h.textContent = dev.label;
         wrap.appendChild(h);
 
         var tbl = document.createElement("table");
-        tbl.className = "and";
-        tbl.appendChild(fixedRow("Adresse", pad8(dev.dec), null));
-        tbl.appendChild(fixedRow("Maske", pad8(MASK_DEC), "maskrow"));
-        tbl.appendChild(ruleLine(8));
+        tbl.className = "calc";
+        tbl.appendChild(fixedRow("IP-Adresse", dev.ip, toBinOctets(dev.ip), null));
+        tbl.appendChild(fixedRow("Subnetzmaske", dev.mask, toBinOctets(dev.mask), "maskrow"));
+        tbl.appendChild(ruleRow(8));
 
         var inputs = [];
-        tbl.appendChild(inputRow("Ergebnis", 8, inputs, dev.label + " Ergebnisbit"));
+        tbl.appendChild(inputRow("Ergebnis", [8,8,8,8], inputs, dev.label + " Oktett"));
         andRows[dev.key] = inputs;
 
         wrap.appendChild(tbl);
         host.appendChild(wrap);
       })(DEVICES[d]);
     }
+  })();
+
+  /* ---------- Vergleich der Netzadressen ---------- */
+  function buildCompare(){
+    var host = document.getElementById("compareBlock");
+    host.innerHTML = "";
+
+    var h = document.createElement("h4");
+    h.textContent = "Die drei Ergebniszeilen untereinander";
+    host.appendChild(h);
+
+    var tbl = document.createElement("table");
+    tbl.className = "calc";
+    for (var d = 0; d < DEVICES.length; d++){
+      var dev = DEVICES[d];
+      var res = andOctets(toBinOctets(dev.ip), toBinOctets(dev.mask));
+      tbl.appendChild(fixedRow(dev.label, null, res, "resrow"));
+    }
+    host.appendChild(tbl);
   }
 
   /* ---------- Prüfungen ---------- */
@@ -708,12 +727,17 @@
     },
 
     a1b: function(){
-      var s = readBitRow(placeInputs);
-      if (s.indexOf(" ") > -1){ say("msg-a1b", "Es fehlt noch mindestens eine Stelle. Auch die Nullen eintragen.", "hint"); return; }
-      var ok = binVal(s) === VAL_A;
-      for (var i = 0; i < placeInputs.length; i++) placeInputs[i].classList.toggle("ok", ok);
-      if (ok){ say("msg-a1b", "Die Binärzahl stimmt.", "ok"); }
-      else { say("msg-a1b", "Noch nicht. Beginne beim rechten Feld mit Schalter 1 und arbeite dich nach links vor.", "hint"); }
+      var v = clean(document.getElementById("inBinA").value);
+      var el = document.getElementById("inBinA");
+      if (v === ""){ say("msg-a1b", "Trage die Binärzahl ein.", "hint"); return; }
+      if (!isBin(v)){ say("msg-a1b", "Es dürfen nur 0 und 1 verwendet werden.", "hint"); return; }
+      if (binVal(v) === VAL_A){
+        el.classList.add("ok");
+        say("msg-a1b", "Die Binärzahl stimmt.", "ok");
+      } else {
+        el.classList.remove("ok");
+        say("msg-a1b", "Noch nicht. Beginne bei Schalter 1 auf der rechten Seite deiner Zahl und arbeite dich nach links vor.", "hint");
+      }
     },
 
     a1c: function(){
@@ -748,92 +772,85 @@
     },
 
     a2a: function(){
-      var s = readBitRow(ruleInputs);
-      if (s.indexOf(" ") > -1){ say("msg-a2a", "Es fehlt noch mindestens ein Ergebnis.", "hint"); return; }
+      var v = clean(ruleInputs[0].value);
+      if (v.length !== 4){ say("msg-a2a", "Es fehlt noch mindestens eine Stelle.", "hint"); return; }
       var exp = "";
       for (var i = 0; i < 4; i++){
         exp += (CASE_ADR.charAt(i) === "1" && CASE_MASK.charAt(i) === "1") ? "1" : "0";
       }
-      var ok = (s === exp);
-      for (var j = 0; j < ruleInputs.length; j++) ruleInputs[j].classList.toggle("ok", ok);
-      if (ok){
-        say("msg-a2a", "Stimmt. Diese Verknüpfung heißt UND. Nur wenn in beiden Zeilen einer Spalte eine 1 steht, bleibt eine 1 übrig.", "ok");
-      } else {
-        say("msg-a2a", "Noch nicht. Prüfe Spalte für Spalte, ob die Maske dort durchlässt oder abdeckt.", "hint");
-      }
+      var ok = (v === exp);
+      ruleInputs[0].classList.toggle("ok", ok);
+      if (ok){ say("msg-a2a", "Stimmt.", "ok"); }
+      else { say("msg-a2a", "Noch nicht. Sieh dir jede Spalte einzeln an und vergleiche mit der Tabelle oben.", "hint"); }
     },
 
     a2b: function(){
-      var fields = document.querySelectorAll("input.oct");
-      var allOk = true, firstMsg = "";
-      for (var i = 0; i < fields.length; i++){
-        var f = fields[i];
-        var v = clean(f.value);
-        var t = Number(f.dataset.target);
-        var ok = false, msg = "";
-        if (v === ""){ msg = "Es fehlt noch mindestens eine Bitfolge."; }
-        else if (!isBin(v)){ msg = "Es dürfen nur 0 und 1 verwendet werden."; }
-        else if (v.length !== 8){ msg = "Ein Oktett hat genau acht Stellen. Führende Nullen mitschreiben."; }
-        else if (binVal(v) > t){ msg = "Mindestens ein Wert ist zu groß."; }
-        else if (binVal(v) < t){ msg = "Mindestens ein Wert ist zu klein."; }
-        else { ok = true; }
-        f.classList.toggle("ok", ok);
-        if (!ok){ allOk = false; if (!firstMsg) firstMsg = msg; }
-      }
-      if (allOk){
-        say("msg-a2b", "Alle vier Bitfolgen stimmen.", "ok");
-        buildAndBlocks();
-        document.getElementById("andBox").classList.remove("locked");
-        document.getElementById("lockNoteC").style.display = "none";
-      } else {
-        say("msg-a2b", firstMsg, "hint");
-      }
-    },
-
-    a2c: function(){
       var allOk = true, wrong = [];
       for (var d = 0; d < DEVICES.length; d++){
         var dev = DEVICES[d];
         var inputs = andRows[dev.key];
-        if (!inputs){ say("msg-a2c", "Bearbeite zuerst Aufgabe 2b.", "hint"); return; }
-        var s = readBitRow(inputs);
-        if (s.indexOf(" ") > -1){ say("msg-a2c", "Bei " + dev.label + " fehlt noch mindestens eine Stelle.", "hint"); return; }
-        var ok = (s === pad8(dev.dec & MASK_DEC));
-        for (var i = 0; i < inputs.length; i++) inputs[i].classList.toggle("ok", ok);
-        if (!ok){ allOk = false; wrong.push(dev.label); }
+        var exp = andOctets(toBinOctets(dev.ip), toBinOctets(dev.mask));
+        var devOk = true;
+        for (var i = 0; i < inputs.length; i++){
+          var v = clean(inputs[i].value);
+          if (v.length !== 8){
+            say("msg-a2b", "Beim " + dev.label + " ist Oktett " + (i + 1) + " noch nicht vollständig. Ein Oktett hat acht Stellen.", "hint");
+            return;
+          }
+          var ok = (v === exp[i]);
+          inputs[i].classList.toggle("ok", ok);
+          if (!ok) devOk = false;
+        }
+        if (!devOk){ allOk = false; wrong.push(dev.label); }
       }
       if (allOk){
-        say("msg-a2c", "Alle drei Ergebnisse stimmen. Vergleiche sie jetzt untereinander.", "ok");
+        say("msg-a2b", "Alle drei Ergebniszeilen stimmen.", "ok");
+        buildCompare();
         document.getElementById("evalBox").classList.remove("locked");
-        document.getElementById("lockNoteD").style.display = "none";
+        document.getElementById("lockNoteC").style.display = "none";
       } else {
-        say("msg-a2c", "Bei " + wrong.join(" und ") + " stimmt es noch nicht. Wende die Regel aus 2a Spalte für Spalte an.", "hint");
+        say("msg-a2b", "Bei " + wrong.join(" und ") + " stimmt es noch nicht. Gehe Spalte für Spalte vor.", "hint");
       }
     },
 
-    a2d1: function(){
+    a2d: function(){
+      var b = clean(document.getElementById("inBlockSize").value);
+      var c = clean(document.getElementById("inNetCount").value);
+      var picks = document.querySelectorAll("input.pick240");
+      var sel = [];
+      for (var i = 0; i < picks.length; i++) if (picks[i].checked) sel.push(picks[i].value);
+      if (b === "" || c === ""){ say("msg-a2d", "Es fehlt noch eine Angabe.", "hint"); return; }
+      if (sel.length === 0){ say("msg-a2d", "Kreuze die passenden Geräte an.", "hint"); return; }
+
+      var okB = Number(b) === 16;
+      var okC = Number(c) === 16;
+      var okS = sel.length === 2 && sel.indexOf("p196") > -1 && sel.indexOf("p205") > -1;
+      document.getElementById("inBlockSize").classList.toggle("ok", okB);
+      document.getElementById("inNetCount").classList.toggle("ok", okC);
+
+      if (okB && okC && okS){
+        say("msg-a2d", "Alles richtig.", "ok");
+      } else if (!okB){
+        say("msg-a2d", "Die Blockgröße stimmt noch nicht. Rechne 256 minus den Wert der Subnetzmaske.", "hint");
+      } else if (!okC){
+        say("msg-a2d", "Die Anzahl der Netze stimmt noch nicht. Teile 256 durch die Blockgröße.", "hint");
+      } else {
+        say("msg-a2d", "Die Auswahl stimmt noch nicht. Zähle in Schritten der Blockgröße hoch und sieh nach, in welchen Bereich die 200 fällt.", "hint");
+      }
+    },
+
+    a2c: function(){
       var picks = document.querySelectorAll("input.pick");
       var sel = [];
       for (var i = 0; i < picks.length; i++) if (picks[i].checked) sel.push(picks[i].value);
-      if (sel.length === 0){ say("msg-a2d1", "Wähle die Geräte aus.", "hint"); return; }
+      if (sel.length === 0){ say("msg-a2c", "Wähle die Geräte aus.", "hint"); return; }
       var correct = sel.length === 2 && sel.indexOf("pult") > -1 && sel.indexOf("server") > -1;
       if (correct){
-        say("msg-a2d1", "Richtig. Diese beiden haben nach der Verrechnung dasselbe Ergebnis.", "ok");
+        say("msg-a2c", "Richtig. Nur diese beiden kommen auf dieselbe Netzadresse.", "ok");
       } else if (sel.length === 3){
-        say("msg-a2d1", "Vergleiche die Ergebniszeilen noch einmal genau. Sind wirklich alle drei gleich?", "hint");
+        say("msg-a2c", "Vergleiche die Ergebniszeilen noch einmal genau. Sind wirklich alle drei identisch?", "hint");
       } else {
-        say("msg-a2d1", "Noch nicht. Entscheidend ist allein die Zeile unter dem Strich.", "hint");
-      }
-    },
-
-    a2d2: function(){
-      var v = clean(document.getElementById("inNetDec").value);
-      if (v === ""){ say("msg-a2d2", "Trage eine Zahl ein.", "hint"); return; }
-      if (Number(v) === (130 & MASK_DEC)){
-        document.getElementById("inNetDec").classList.add("ok");
-        say("msg-a2d2", "Stimmt. Das Ergebnis der Verrechnung heißt Netzadresse, hier 192.168.20." + v + ".", "ok");
-      } else {
-        say("msg-a2d2", "Noch nicht. Addiere die Stellenwerte über den Einsen deiner Ergebniszeile.", "hint");
+        say("msg-a2c", "Noch nicht. Entscheidend ist allein die Zeile unter dem Strich.", "hint");
       }
     }
   };
